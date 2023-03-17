@@ -1,5 +1,7 @@
 using MagicVilla_API.DataDbContext;
 using Microsoft.EntityFrameworkCore;
+using MagicVilla_API.Mapping;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,10 +12,13 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddAutoMapper(typeof(MappinConfig));
+
 builder.Services.AddDbContext<DbContextApp>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
+
 
 var app = builder.Build();
 

@@ -1,10 +1,10 @@
-﻿using MagicVilla_API.DataDbContext;
+﻿using AutoMapper;
+using MagicVilla_API.DataDbContext;
 using MagicVilla_API.DTOs;
 using MagicVilla_API.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-
-
+using Microsoft.EntityFrameworkCore;
 
 namespace MagicVilla_API.Controllers
 {
@@ -15,27 +15,32 @@ namespace MagicVilla_API.Controllers
 
         private readonly ILogger<VillaController> _logger;
         private readonly DbContextApp _dbContextApp;
+        private readonly IMapper _mapper;
 
-        public VillaController( ILogger<VillaController> logger, DbContextApp dbContextApp) { 
+        public VillaController( ILogger<VillaController> logger, DbContextApp dbContextApp, IMapper mapper) { 
             _logger = logger;
             _dbContextApp = dbContextApp;
+            _mapper = mapper;
         }
 
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public  ActionResult<IEnumerable<Villa>> GetVillas()
+        public async Task<ActionResult<IEnumerable<VillaExampleDto>>> GetVillas()
         {
+           
+
             try
             {
-                List<Villa> villas = _dbContextApp.Villas.ToList();
+                List<VillaGetDto> villas = await _dbContextApp.Villas.ToListAsync();
                 if (villas.Count <= 0)
                 {
                     return StatusCode(StatusCodes.Status204NoContent, "This List is Empty");
                 }
+
                 _logger.LogInformation("You are show all Villas");
-                return Ok(_dbContextApp.Villas.ToList());
+                return Ok(_mapper.Map<List<VillaExampleDto>>(villas));
             }
             catch (Exception)
             {
@@ -46,16 +51,27 @@ namespace MagicVilla_API.Controllers
         }
 
         [HttpGet("id")]
-        
-        public ActionResult<VillaDto> GetOnlyVilla(int id)
+        [ProducesResponseType(StatusCodes.Status202Accepted)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<VillaGetDto>>  GetOnlyVilla(int id)
         {
-
-            VillaDto villaDto = DataExamples.villaDtos.FirstOrDefault(v => v.Id == id);
-            if (villaDto == null) {
-                _logger.LogError("This " + id + "no exist");
-                return NotFound("This Villa not Found");
+            try
+            {
+                VillaGetDto villaDto = await _dbContextApp.Villas.FirstOrDefaultAsync(villa => villa.Id == id);
+                if (villaDto == null)
+                {
+                    _logger.LogError("This " + id + "no exist");
+                    return NotFound("This Villa not Found");
+                }
+                return StatusCode(StatusCodes.Status202Accepted, villaDto);
             }
-            return StatusCode(StatusCodes.Status202Accepted, villaDto) ;
+            catch (Exception)
+            {
+
+                return StatusCode(StatusCodes.Status500InternalServerError, "Error tu search");
+            }            
+            
         }
 
         [HttpPost]

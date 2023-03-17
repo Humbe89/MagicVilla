@@ -12,8 +12,8 @@ namespace MagicVilla_API.DataDbContext
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
-            modelBuilder.Entity<Villa>().HasData(
-                 new Villa()
+            modelBuilder.Entity<VillaGetDto>().HasData(
+                 new VillaGetDto()
                  {
                      Id = 1,
                      Name = "Villa real",
@@ -26,7 +26,7 @@ namespace MagicVilla_API.DataDbContext
 
 
                  },
-                 new Villa()
+                 new VillaGetDto()
                  {
                      Id = 2,
                      Name = "Villa pla",
@@ -41,6 +41,6 @@ namespace MagicVilla_API.DataDbContext
                 );
         }
 
-        public DbSet<Villa> Villas { get; set; }
+        public DbSet<VillaGetDto> Villas { get; set; }
     }
 }
